@@ -8,7 +8,7 @@ from telethon.events.common import EventBuilder
 class MultiClient:
     def __init__(self, sessions: list, *args, **kwargs) -> TelegramClient:
         self.sessions: list = sessions
-        self.clients: list = list()
+        self.clients: list = []
         self.__default_log__ = logging.getLogger(__base_name__)
         self.__default_log__.addHandler(logging.NullHandler())
         for session in self.sessions:
@@ -28,7 +28,7 @@ class MultiClient:
         loop.run_until_complete(self._run_all_clients())
 
     async def _run_all_clients(self):
-        tasks: list = list()
+        tasks: list = []
         for cli in self.clients:
             await cli.start()
             tasks.append(cli.run_until_disconnected())
@@ -40,15 +40,18 @@ class MultiClient:
     def stringify(self):
         result = ['(', '\n']
         for session_id, client in self.to_dict().items():
-            result.append('\t')
-            result.append(session_id)
-            result.append(' : ')
-            result.append(TLObject.pretty_format(client.__dict__, indent=0))
-            result.append(',\n')
+            result.extend(
+                (
+                    '\t',
+                    session_id,
+                    ' : ',
+                    TLObject.pretty_format(client.__dict__, indent=0),
+                    ',\n',
+                )
+            )
+
         result.pop()
-        result.append('\n')
-        result.append('\t')
-        result.append(')')
+        result.extend(('\n', '\t', ')'))
         return ''.join(result)
 
     def __iter__(self):
